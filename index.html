@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📱 P2P Мессенджер - Группы и Настройки</title>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #0f172a;
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .app-container {
+            display: flex;
+            height: 100vh;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        /* Левая панель - контакты и группы */
+        .sidebar {
+            width: 300px;
+            background: #1e293b;
+            border-right: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-panel {
+            padding: 20px;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .user-avatar:hover {
+            opacity: 0.9;
+        }
+        
+        .user-details {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        .user-id {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 3px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            background: #1e293b;
+            border: none;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .tab.active {
+            color: #3b82f6;
+            border-bottom: 2px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .contacts-list, .groups-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .contact-item, .group-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.2s ease;
+        }
+        
+        .contact-item:hover, .group-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .contact-item.active, .group-item.active {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid #3b82f6;
+        }
+        
+        .contact-avatar, .group-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .contact-avatar {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .group-avatar {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+        
+        .contact-info, .group-info {
+            flex: 1;
+        }
+        
+        .contact-name, .group-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        .contact-status, .group-members {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        .contact-status.online {
+            color: #10b981;
+        }
+        
+        .add-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+        
+        .add-btn:hover {
+            background: #2563eb;
+            transform: scale(1.1);
+        }
+        
+        /* Центральная панель - чат */
+        .chat-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0f172a;
+        }
+        
+        .chat-header {
+            padding: 20px;
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .chat-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .chat-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: #475569;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chat-btn:hover {
+            background: #64748b;
+        }
+        
+        .chat-btn.primary {
+            background: #3b82f6;
+        }
+        
+        .chat-btn.primary:hover {
+            background: #2563eb;
+        }
+        
+        .chat-btn.success {
+            background: #10b981;
+        }
+        
+        .chat-btn.success:hover {
+            background: #059669;
+        }
+        
+        .messages-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message.received {
+            background: #1e293b;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .message.sent {
+            background: #1e40af;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message-sender {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        .message-input-area {
+            padding: 20px;
+            background: #1e293b;
+            border-top: 1px solid #334155;
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 15px 20px;
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 25px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .message-input:focus {
+            border-color: #3b82f6;
+        }
+        
+        .send-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .send-btn:hover {
+            background: #2563eb;
+        }
+        
+        /* Правая панель - настройки/участники */
+        .side-panel {
+            width: 300px;
+            background: #1e293b;
+            border-left: 1px solid #334155;
+            display: none;
+            flex-direction: column;
+        }
+        
+        .side-panel.active {
+            display: flex;
+        }
+        
+        .side-header {
+            padding: 20px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .side-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .settings-section {
+            margin-bottom: 30px;
+        }
+        
+        .settings-section h4 {
+            color: #3b82f6;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #475569;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #10b981;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .members-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .member-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .member-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            border: 2px solid #3b82f6;
+        }
+        
+        .modal-content h3 {
+            color: #3b82f6;
+            margin-bottom: 20px;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 15px;
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .modal-btn.primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .modal-btn.secondary {
+            background: #475569;
+            color: white;
+        }
+        
+        /* Уведомления */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 2000;
+        }
+        
+        .notification.show {
+            display: flex;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 1200px) {
+            .side-panel {
+                position: fixed;
+                right: 0;
+                top: 0;
+                height: 100vh;
+                z-index: 100;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                z-index: 100;
+                display: none;
+            }
+            
+            .sidebar.active {
+                display: flex;
+            }
+            
+            .side-panel {
+                width: 100%;
+                position: fixed;
+                right: 0;
+                top: 0;
+                height: 100vh;
+                z-index: 100;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Левая панель - контакты и группы -->
+        <div class="sidebar" id="sidebar">
+            <div class="user-panel">
+                <div class="user-info">
+                    <div class="user-avatar" onclick="showSettings()">Я</div>
+                    <div class="user-details" onclick="showSettings()">
+                        <div class="user-name" id="userName">Вы</div>
+                        <div class="user-id" id="userId">ID: загрузка...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('contacts')">👥 Контакты</button>
+                <button class="tab" onclick="switchTab('groups')">👨‍👩‍👧‍👦 Группы</button>
+            </div>
+            
+            <div class="contacts-list" id="contactsList">
+                <!-- Контакты будут здесь -->
+            </div>
+            
+            <div class="groups-list" id="groupsList" style="display: none;">
+                <!-- Группы будут здесь -->
+            </div>
+            
+            <button class="add-btn" onclick="showAddModal()">+</button>
+        </div>
+
+        <!-- Центральная панель - чат -->
+        <div class="chat-panel" id="chatPanel">
+            <div class="chat-header">
+                <div class="chat-info">
+                    <div class="contact-avatar" id="chatAvatar">Ч</div>
+                    <div>
+                        <h3 id="chatTitle">Выберите чат</h3>
+                        <div id="chatStatus" style="font-size: 14px; color: #94a3b8;">
+                            Начните общение
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-actions">
+                    <button class="chat-btn" onclick="toggleSidebar()">☰</button>
+                    <button class="chat-btn primary" onclick="startCall()" id="callBtn">
+                        📞
+                    </button>
+                    <button class="chat-btn success" onclick="toggleSidePanel('members')" id="membersBtn">
+                        👥
+                    </button>
+                    <button class="chat-btn" onclick="toggleSidePanel('settings')" id="settingsBtn">
+                        ⚙️
+                    </button>
+                </div>
+            </div>
+            
+            <div class="messages-container" id="messagesContainer">
+                <div style="text-align: center; color: #94a3b8; padding: 40px;">
+                    <h3>👋 Добро пожаловать!</h3>
+                    <p>Выберите чат слева или создайте новый</p>
+                </div>
+            </div>
+            
+            <div class="message-input-area">
+                <div class="input-container">
+                    <input type="text" class="message-input" id="messageInput" 
+                           placeholder="Введите сообщение..." 
+                           onkeypress="if(event.key === 'Enter') sendMessage()"
+                           disabled>
+                    <button class="send-btn" onclick="sendMessage()" id="sendBtn" disabled>
+                        ➤
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая панель - настройки/участники -->
+        <div class="side-panel" id="sidePanel">
+            <div class="side-header">
+                <h3 id="sidePanelTitle">Настройки</h3>
+                <button class="chat-btn" onclick="toggleSidePanel()">✕</button>
+            </div>
+            
+            <div class="side-content" id="sidePanelContent">
+                <!-- Контент будет меняться -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальные окна -->
+    <div class="modal" id="addModal">
+        <div class="modal-content">
+            <h3>➕ Добавить</h3>
+            <button class="modal-btn primary" onclick="showAddContactModal()" style="margin-bottom: 10px;">
+                👤 Добавить контакт
+            </button>
+            <button class="modal-btn primary" onclick="showCreateGroupModal()">
+                👨‍👩‍👧‍👦 Создать группу
+            </button>
+            <button class="modal-btn secondary" onclick="hideModal()" style="margin-top: 10px;">
+                Отмена
+            </button>
+        </div>
+    </div>
+    
+    <div class="modal" id="addContactModal">
+        <div class="modal-content">
+            <h3>👤 Добавить контакт</h3>
+            <input type="text" class="modal-input" id="contactIdInput" placeholder="ID друга...">
+            <input type="text" class="modal-input" id="contactNameInput" placeholder="Имя друга (необязательно)">
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="hideModal()">Отмена</button>
+                <button class="modal-btn primary" onclick="addContact()">Добавить</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="createGroupModal">
+        <div class="modal-content">
+            <h3>👨‍👩‍👧‍👦 Создать группу</h3>
+            <input type="text" class="modal-input" id="groupNameInput" placeholder="Название группы">
+            <input type="text" class="modal-input" id="groupIdsInput" placeholder="ID участников (через запятую)">
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="hideModal()">Отмена</button>
+                <button class="modal-btn primary" onclick="createGroup()">Создать</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <h3>⚙️ Настройки профиля</h3>
+            <input type="text" class="modal-input" id="nameInput" placeholder="Ваше имя" value="Вы">
+            <div style="margin-bottom: 20px;">
+                <div style="font-weight: 600; margin-bottom: 10px;">Ваш ID:</div>
+                <div style="background: #334155; padding: 15px; border-radius: 8px; font-family: monospace; word-break: break-all;" id="settingsUserId">
+                    Загрузка...
+                </div>
+                <button onclick="copyMyId()" style="margin-top: 10px; padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 8px; width: 100%; cursor: pointer;">
+                    📋 Скопировать мой ID
+                </button>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="hideModal()">Закрыть</button>
+                <button class="modal-btn primary" onclick="saveSettings()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Уведомление -->
+    <div class="notification" id="notification">
+        <span id="notificationText">Уведомление</span>
+    </div>
+
+    <script>
+        // ========== ДАННЫЕ ==========
+        let peer = null;
+        let myId = null;
+        let myName = "Вы";
+        let connections = {}; // Все активные соединения
+        
+        let contacts = [];
+        let groups = [];
+        let currentChat = null; // {type: 'contact'/'group', id: '...'}
+        let messages = {}; // Хранит сообщения по chatId
+        
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        function init() {
+            // Инициализируем Peer
+            peer = new Peer({
+                config: {
+                    iceServers: [
+                        { urls: "stun:stun.l.google.com:19302" },
+                        { urls: "stun:stun1.l.google.com:19302" }
+                    ]
+                }
+            });
+            
+            peer.on('open', (id) => {
+                myId = id;
+                updateUI();
+                showNotification('✅ Подключено! Ваш ID: ' + id);
+                
+                // Добавляем тестовые данные
+                addTestData();
+            });
+            
+            peer.on('connection', (conn) => {
+                // Кто-то подключается к нам
+                handleIncomingConnection(conn);
+            });
+            
+            peer.on('error', (err) => {
+                console.error('PeerJS ошибка:', err);
+                showNotification('❌ Ошибка соединения');
+            });
+        }
+        
+        function addTestData() {
+            // Тестовый контакт
+            contacts.push({
+                id: 'TEST-CONTACT',
+                name: 'Друг 1',
+                avatar: 'Д',
+                online: true,
+                type: 'contact'
+            });
+            
+            // Тестовая группа
+            groups.push({
+                id: 'TEST-GROUP',
+                name: 'Группа друзей',
+                avatar: 'Г',
+                members: ['Вы', 'Друг 1', 'Друг 2'],
+                online: 3,
+                type: 'group'
+            });
+            
+            // Тестовые сообщения
+            messages['TEST-CONTACT'] = [
+                { sender: 'Друг 1', text: 'Привет! Как дела?', time: '10:30', isMe: false },
+                { sender: 'Вы', text: 'Привет! Всё отлично!', time: '10:31', isMe: true },
+                { sender: 'Друг 1', text: 'Хочешь в групповой чат?', time: '10:32', isMe: false }
+            ];
+            
+            messages['TEST-GROUP'] = [
+                { sender: 'Друг 1', text: 'Всем привет!', time: '10:00', isMe: false },
+                { sender: 'Друг 2', text: 'Привет!', time: '10:01', isMe: false },
+                { sender: 'Вы', text: 'Всем здорова!', time: '10:02', isMe: true }
+            ];
+            
+            renderContacts();
+            renderGroups();
+        }
+        
+        // ========== ОБРАБОТКА СОЕДИНЕНИЙ ==========
+        function handleIncomingConnection(conn) {
+            const contactId = conn.peer;
+            
+            conn.on('open', () => {
+                // Сохраняем соединение
+                connections[contactId] = conn;
+                
+                // Обновляем статус контакта
+                const contact = contacts.find(c => c.id === contactId);
+                if (contact) {
+                    contact.online = true;
+                    renderContacts();
+                    showNotification(`✅ ${contact.name} подключился`);
+                } else {
+                    // Новый контакт
+                    const newContact = {
+                        id: contactId,
+                        name: `Друг (${contactId.substring(0, 6)})`,
+                        avatar: contactId.charAt(0),
+                        online: true,
+                        type: 'contact'
+                    };
+                    contacts.push(newContact);
+                    renderContacts();
+                    showNotification(`👤 Новый друг подключился: ${newContact.name}`);
+                }
+            });
+            
+            conn.on('data', (data) => {
+                try {
+                    const message = JSON.parse(data);
+                    handleIncomingMessage(contactId, message);
+                } catch (err) {
+                    console.error('Ошибка обработки сообщения:', err);
+                }
+            });
+            
+            conn.on('close', () => {
+                // Обновляем статус
+                const contact = contacts.find(c => c.id === contactId);
+                if (contact) {
+                    contact.online = false;
+                    renderContacts();
+                }
+                delete connections[contactId];
+            });
+        }
+        
+        function connectToContact(contactId) {
+            if (connections[contactId]) {
+                showNotification('✅ Уже подключено');
+                return;
+            }
+            
+            const conn = peer.connect(contactId);
+            connections[contactId] = conn;
+            
+            conn.on('open', () => {
+                const contact = contacts.find(c => c.id === contactId);
+                if (contact) {
+                    contact.online = true;
+                } else {
+                    contacts.push({
+                        id: contactId,
+                        name: `Друг (${contactId.substring(0, 6)})`,
+                        avatar: contactId.charAt(0),
+                        online: true,
+                        type: 'contact'
+                    });
+                }
+                renderContacts();
+                showNotification('✅ Подключено!');
+            });
+            
+            conn.on('data', (data) => {
+                try {
+                    const message = JSON.parse(data);
+                    handleIncomingMessage(contactId, message);
+                } catch (err) {
+                    console.error('Ошибка обработки сообщения:', err);
+                }
+            });
+            
+            conn.on('close', () => {
+                const contact = contacts.find(c => c.id === contactId);
+                if (contact) {
+                    contact.online = false;
+                    renderContacts();
+                }
+                delete connections[contactId];
+            });
+        }
+        
+        // ========== СООБЩЕНИЯ ==========
+        function handleIncomingMessage(fromId, message) {
+            if (!messages[fromId]) {
+                messages[fromId] = [];
+            }
+            
+            messages[fromId].push({
+                sender: message.sender || 'Друг',
+                text: message.text,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                isMe: false
+            });
+            
+            // Если это активный чат - обновляем
+            if (currentChat && currentChat.id === fromId) {
+                renderMessages();
+            }
+            
+            // Уведомление
+            const contact = contacts.find(c => c.id === fromId);
+            if (contact) {
+                showNotification(`${contact.name}: ${message.text.substring(0, 30)}...`);
+            }
+        }
+        
+        function sendMessage() {
+            if (!currentChat) {
+                showNotification('❌ Выберите чат');
+                return;
+            }
+            
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (!text) return;
+            
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Сохраняем у себя
+            if (!messages[currentChat.id]) {
+                messages[currentChat.id] = [];
+            }
+            
+            messages[currentChat.id].push({
+                sender: myName,
+                text: text,
+                time: time,
+                isMe: true
+            });
+            
+            // Отправляем
+            if (currentChat.type === 'contact') {
+                // Личное сообщение
+                const conn = connections[currentChat.id];
+                if (conn && conn.open) {
+                    conn.send(JSON.stringify({
+                        sender: myName,
+                        text: text,
+                        time: time
+                    }));
+                }
+            } else if (currentChat.type === 'group') {
+                // Групповое сообщение (отправляем всем участникам)
+                const group = groups.find(g => g.id === currentChat.id);
+                if (group) {
+                    // В реальном приложении здесь была бы логика рассылки
+                    showNotification('📢 Сообщение отправлено в группу');
+                }
+            }
+            
+            // Обновляем UI
+            input.value = '';
+            renderMessages();
+            renderContacts();
+            renderGroups();
+        }
+        
+        // ========== UI ФУНКЦИИ ==========
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (tab === 'contacts') {
+                document.getElementById('contactsList').style.display = 'block';
+                document.getElementById('groupsList').style.display = 'none';
+            } else {
+                document.getElementById('contactsList').style.display = 'none';
+                document.getElementById('groupsList').style.display = 'block';
+            }
+        }
+        
+        function renderContacts() {
+            const container = document.getElementById('contactsList');
+            container.innerHTML = '';
+            
+            contacts.forEach(contact => {
+                const lastMessage = messages[contact.id] ? 
+                    messages[contact.id][messages[contact.id].length - 1] : null;
+                
+                const div = document.createElement('div');
+                div.className = `contact-item ${currentChat && currentChat.id === contact.id ? 'active' : ''}`;
+                div.onclick = () => selectChat(contact);
+                div.innerHTML = `
+                    <div class="contact-avatar">${contact.avatar}</div>
+                    <div class="contact-info">
+                        <div class="contact-name">${contact.name}</div>
+                        <div class="contact-status ${contact.online ? 'online' : ''}">
+                            ${contact.online ? '● В сети' : '● Не в сети'}
+                            ${lastMessage ? ` · ${lastMessage.text.substring(0, 20)}...` : ''}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function renderGroups() {
+            const container = document.getElementById('groupsList');
+            container.innerHTML = '';
+            
+            groups.forEach(group => {
+                const lastMessage = messages[group.id] ? 
+                    messages[group.id][messages[group.id].length - 1] : null;
+                
+                const div = document.createElement('div');
+                div.className = `group-item ${currentChat && currentChat.id === group.id ? 'active' : ''}`;
+                div.onclick = () => selectChat(group);
+                div.innerHTML = `
+                    <div class="group-avatar">${group.avatar}</div>
+                    <div class="group-info">
+                        <div class="group-name">${group.name}</div>
+                        <div class="group-members">
+                            👥 ${group.members.length} участников
+                            ${lastMessage ? ` · ${lastMessage.sender}: ${lastMessage.text.substring(0, 20)}...` : ''}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function selectChat(chat) {
+            currentChat = chat;
+            
+            // Обновляем UI
+            document.getElementById('chatTitle').textContent = chat.name;
+            document.getElementById('chatAvatar').textContent = chat.avatar;
+            document.getElementById('chatStatus').textContent = 
+                chat.type === 'contact' ? 
+                (chat.online ? '● В сети' : '● Не в сети') :
+                `👥 ${chat.members ? chat.members.length : 0} участников`;
+            
+            // Активируем поле ввода
+            document.getElementById('messageInput').disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+            
+            // Обновляем активные элементы
+            renderContacts();
+            renderGroups();
+            
+            // Показываем сообщения
+            renderMessages();
+            
+            // Подключаемся если это контакт
+            if (chat.type === 'contact' && !chat.online) {
+                connectToContact(chat.id);
+            }
+        }
+        
+        function renderMessages() {
+            if (!currentChat) return;
+            
+            const container = document.getElementById('messagesContainer');
+            const chatMessages = messages[currentChat.id] || [];
+            
+            container.innerHTML = '';
+            
+            if (chatMessages.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; color: #94a3b8; padding: 40px;">
+                        <h3>Начните общение!</h3>
+                        <p>Отправьте первое сообщение</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            chatMessages.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = `message ${msg.isMe ? 'sent' : 'received'}`;
+                div.innerHTML = `
+                    <div class="message-sender">${msg.sender}</div>
+                    <div>${msg.text}</div>
+                    <div class="message-time">${msg.time}</div>
+                `;
+                container.appendChild(div);
+            });
+            
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function toggleSidePanel(type) {
+            const panel = document.getElementById('sidePanel');
+            const content = document.getElementById('sidePanelContent');
+            
+            if (panel.classList.contains('active') && !type) {
+                panel.classList.remove('active');
+                return;
+            }
+            
+            panel.classList.add('active');
+            
+            if (type === 'settings') {
+                document.getElementById('sidePanelTitle').textContent = 'Настройки чата';
+                content.innerHTML = `
+                    <div class="settings-section">
+                        <h4>⚙️ Настройки уведомлений</h4>
+                        <div class="setting-item">
+                            <span>Звук уведомлений</span>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <span>Вибросигнал</span>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4>🎨 Внешний вид</h4>
+                        <div class="setting-item">
+                            <span>Тёмная тема</span>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <span>Крупный шрифт</span>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button class="modal-btn primary" onclick="clearChatHistory()" style="width: 100%; margin-top: 20px;">
+                        🗑️ Очистить историю
+                    </button>
+                `;
+            } else if (type === 'members') {
+                if (!currentChat || currentChat.type !== 'group') {
+                    content.innerHTML = '<p>Выберите группу</p>';
+                    return;
+                }
+                
+                document.getElementById('sidePanelTitle').textContent = `Участники (${currentChat.members.length})`;
+                content.innerHTML = `
+                    <div class="members-list">
+                        ${currentChat.members.map(member => `
+                            <div class="member-item">
+                                <div class="member-avatar">${member.charAt(0)}</div>
+                                <div>
+                                    <div style="font-weight: 600;">${member}</div>
+                                    <div style="font-size: 12px; color: #94a3b8;">${member === myName ? 'Вы' : 'Участник'}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <button class="modal-btn primary" onclick="addMemberToGroup()" style="width: 100%; margin-top: 20px;">
+                        👤 Добавить участника
+                    </button>
+                `;
+            }
+        }
+        
+        // ========== МОДАЛЬНЫЕ ОКНА ==========
+        function showAddModal() {
+            document.getElementById('addModal').classList.add('active');
+        }
+        
+        function showAddContactModal() {
+            document.getElementById('addModal').classList.remove('active');
+            document.getElementById('addContactModal').classList.add('active');
+        }
+        
+        function showCreateGroupModal() {
+            document.getElementById('addModal').classList.remove('active');
+            document.getElementById('createGroupModal').classList.add('active');
+        }
+        
+        function showSettings() {
+            document.getElementById('settingsUserId').textContent = myId || 'Загрузка...';
+            document.getElementById('nameInput').value = myName;
+            document.getElementById('settingsModal').classList.add('active');
+        }
+        
+        function hideModal() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.remove('active');
+            });
+        }
+        
+        function addContact() {
+            const id = document.getElementById('contactIdInput').value.trim();
+            const name = document.getElementById('contactNameInput').value.trim() || `Друг (${id.substring(0, 6)})`;
+            
+            if (!id) {
+                showNotification('❌ Введите ID друга');
+                return;
+            }
+            
+            if (id === myId) {
+                showNotification('❌ Нельзя добавить самого себя');
+                return;
+            }
+            
+            if (contacts.find(c => c.id === id)) {
+                showNotification('❌ Этот контакт уже добавлен');
+                return;
+            }
+            
+            contacts.push({
+                id: id,
+                name: name,
+                avatar: name.charAt(0),
+                online: false,
+                type: 'contact'
+            });
+            
+            hideModal();
+            renderContacts();
+            showNotification(`👤 Контакт "${name}" добавлен`);
+            
+            // Пробуем подключиться
+            connectToContact(id);
+        }
+        
+        function createGroup() {
+            const name = document.getElementById('groupNameInput').value.trim();
+            const ids = document.getElementById('groupIdsInput').value.trim();
+            
+            if (!name) {
+                showNotification('❌ Введите название группы');
+                return;
+            }
+            
+            const groupId = 'GROUP-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+            const members = ['Вы'];
+            
+            if (ids) {
+                ids.split(',').forEach(id => {
+                    const trimmed = id.trim();
+                    if (trimmed && trimmed !== myId) {
+                        members.push(`Участник (${trimmed.substring(0, 6)})`);
+                    }
+                });
+            }
+            
+            groups.push({
+                id: groupId,
+                name: name,
+                avatar: name.charAt(0),
+                members: members,
+                online: members.length,
+                type: 'group'
+            });
+            
+            hideModal();
+            renderGroups();
+            showNotification(`👨‍👩‍👧‍👦 Группа "${name}" создана`);
+        }
+        
+        function saveSettings() {
+            const newName = document.getElementById('nameInput').value.trim();
+            if (newName && newName.length > 0) {
+                myName = newName;
+                document.getElementById('userName').textContent = myName;
+                showNotification('✅ Имя изменено');
+            }
+            hideModal();
+        }
+        
+        // ========== ВСПОМОГАТЕЛЬНЫЕ ==========
+        function updateUI() {
+            if (myId) {
+                document.getElementById('userId').textContent = `ID: ${myId}`;
+            }
+        }
+        
+        function copyMyId() {
+            if (!myId) {
+                showNotification('❌ ID еще не загружен');
+                return;
+            }
+            
+            navigator.clipboard.writeText(myId)
+                .then(() => showNotification('✅ ID скопирован! Отправь другу'))
+                .catch(() => {
+                    const input = document.createElement('input');
+                    input.value = myId;
+                    document.body.appendChild(input);
+                    input.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(input);
+                    showNotification('✅ ID скопирован!');
+                });
+        }
+        
+        function startCall() {
+            if (!currentChat) {
+                showNotification('❌ Выберите чат для звонка');
+                return;
+            }
+            
+            if (currentChat.type === 'group') {
+                showNotification('📞 Начинаем групповой звонок...');
+            } else {
+                showNotification(`📞 Звонок ${currentChat.name}...`);
+            }
+        }
+        
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+        
+        function clearChatHistory() {
+            if (!currentChat) return;
+            
+            if (confirm('Очистить историю чата?')) {
+                messages[currentChat.id] = [];
+                renderMessages();
+                showNotification('🗑️ История очищена');
+            }
+        }
+        
+        function addMemberToGroup() {
+            const memberId = prompt('Введите ID нового участника:');
+            if (memberId && currentChat) {
+                currentChat.members.push(`Участник (${memberId.substring(0, 6)})`);
+                showNotification('👤 Участник добавлен');
+                toggleSidePanel('members');
+            }
+        }
+        
+        function showNotification(text) {
+            const notification = document.getElementById('notification');
+            notification.querySelector('#notificationText').textContent = text;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // ========== ЗАПУСК ==========
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
