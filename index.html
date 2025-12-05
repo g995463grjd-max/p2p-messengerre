@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📱 P2P Мессенджер - РЕАЛЬНЫЙ</title>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Левая панель */
+        .left-panel {
+            width: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-info {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+        }
+        
+        .user-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #4cc9f0;
+        }
+        
+        .user-id {
+            font-family: monospace;
+            background: rgba(76, 201, 240, 0.2);
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            cursor: pointer;
+            border: 1px solid #4cc9f0;
+        }
+        
+        .user-id:hover {
+            background: rgba(76, 201, 240, 0.3);
+        }
+        
+        .connection-panel {
+            margin-top: 20px;
+        }
+        
+        .connection-panel h3 {
+            color: #4cc9f0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .input-group input {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #4cc9f0;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            background: #4cc9f0;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background: #3ab0d8;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #43b581;
+        }
+        
+        .btn-success:hover {
+            background: #3a9e70;
+        }
+        
+        .btn-danger {
+            background: #f72585;
+        }
+        
+        .btn-danger:hover {
+            background: #e01e75;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border-left: 4px solid #4cc9f0;
+        }
+        
+        .status h4 {
+            color: #4cc9f0;
+            margin-bottom: 10px;
+        }
+        
+        /* Правая панель */
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        
+        .chat-header {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .chat-with {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .friend-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #f72585 0%, #b5179e 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .friend-info h3 {
+            color: #4cc9f0;
+            margin-bottom: 5px;
+        }
+        
+        .friend-status {
+            color: #43b581;
+            font-size: 14px;
+        }
+        
+        .call-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .call-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: #43b581;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .call-btn:hover {
+            background: #3a9e70;
+            transform: scale(1.1);
+        }
+        
+        .call-btn.end {
+            background: #f72585;
+        }
+        
+        .messages-container {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            max-width: 70%;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message.received {
+            margin-right: auto;
+        }
+        
+        .message.sent {
+            margin-left: auto;
+        }
+        
+        .message-content {
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+        }
+        
+        .message.received .message-content {
+            background: rgba(67, 181, 129, 0.2);
+            border-bottom-left-radius: 4px;
+        }
+        
+        .message.sent .message-content {
+            background: rgba(76, 201, 240, 0.3);
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message-sender {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 4px;
+            padding-left: 10px;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        .message-input-area {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .message-input:focus {
+            outline: none;
+            border-color: #4cc9f0;
+        }
+        
+        .send-btn {
+            width: 60px;
+            background: #4cc9f0;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .send-btn:hover {
+            background: #3ab0d8;
+        }
+        
+        /* Панель звонка */
+        .call-panel {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            border: 2px solid #4cc9f0;
+            z-index: 1000;
+            text-align: center;
+            min-width: 300px;
+        }
+        
+        .call-panel.active {
+            display: block;
+        }
+        
+        .call-title {
+            color: #4cc9f0;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .call-timer {
+            font-size: 36px;
+            font-weight: bold;
+            color: #43b581;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+        
+        .call-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        /* Уведомления */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #43b581;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 2000;
+        }
+        
+        .notification.show {
+            display: flex;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Загрузка */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            font-size: 18px;
+            color: #4cc9f0;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .left-panel {
+                width: 100%;
+                height: auto;
+            }
+            
+            .right-panel {
+                height: calc(100vh - 300px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Левая панель -->
+        <div class="left-panel">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">Я</div>
+                <div class="user-name" id="userName">Вы</div>
+                <div class="user-id" id="userId" onclick="copyMyId()">
+                    Загрузка ID...
+                </div>
+            </div>
+            
+            <div class="connection-panel">
+                <h3><i class="fas fa-link"></i> Подключение</h3>
+                
+                <div class="input-group">
+                    <input type="text" id="friendIdInput" placeholder="ID друга...">
+                    <button class="btn" onclick="connectToFriend()">
+                        <i class="fas fa-plug"></i>
+                    </button>
+                </div>
+                
+                <button class="btn btn-success" onclick="copyMyId()" style="width: 100%; margin-top: 10px;">
+                    <i class="fas fa-copy"></i> Копировать мой ID
+                </button>
+                
+                <button class="btn btn-danger" onclick="disconnect()" style="width: 100%; margin-top: 10px;">
+                    <i class="fas fa-unlink"></i> Отключиться
+                </button>
+            </div>
+            
+            <div class="status">
+                <h4>Статус:</h4>
+                <div id="connectionStatus">Ожидание подключения...</div>
+                <div id="friendStatus" style="margin-top: 10px; font-size: 14px; color: #94a3b8;">
+                    Друг не подключен
+                </div>
+            </div>
+        </div>
+        
+        <!-- Правая панель -->
+        <div class="right-panel">
+            <div class="chat-header">
+                <div class="chat-with">
+                    <div class="friend-avatar" id="friendAvatar">Д</div>
+                    <div class="friend-info">
+                        <h3 id="friendName">Выберите друга</h3>
+                        <div class="friend-status" id="currentFriendStatus">
+                            Не подключен
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="call-controls">
+                    <button class="call-btn" onclick="startCall()" id="callBtn">
+                        📞
+                    </button>
+                    <button class="call-btn end" onclick="endCall()" id="endCallBtn" style="display: none;">
+                        📵
+                    </button>
+                </div>
+            </div>
+            
+            <div class="messages-container" id="messagesContainer">
+                <div class="loading" id="loadingMessages">
+                    <div>Выберите друга для общения</div>
+                </div>
+            </div>
+            
+            <div class="message-input-area">
+                <input type="text" class="message-input" id="messageInput" 
+                       placeholder="Введите сообщение..." 
+                       onkeypress="if(event.key === 'Enter') sendMessage()"
+                       disabled>
+                <button class="send-btn" onclick="sendMessage()" id="sendBtn" disabled>
+                    ➤
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Панель звонка -->
+    <div class="call-panel" id="callPanel">
+        <h3 class="call-title" id="callTitle">Звонок</h3>
+        <div id="callWith">Другу</div>
+        <div class="call-timer" id="callTimer">00:00</div>
+        <div class="call-buttons">
+            <button class="btn btn-success" onclick="acceptCall()" id="acceptBtn">
+                <i class="fas fa-phone"></i> Принять
+            </button>
+            <button class="btn" onclick="toggleMute()" id="muteBtn">
+                <i class="fas fa-microphone"></i> Выкл микрофон
+            </button>
+            <button class="btn btn-danger" onclick="endCall()">
+                <i class="fas fa-phone-slash"></i> Завершить
+            </button>
+        </div>
+    </div>
+    
+    <!-- Уведомление -->
+    <div class="notification" id="notification">
+        <span id="notificationText">Уведомление</span>
+    </div>
+
+    <script>
+        // ========== КОНФИГУРАЦИЯ ==========
+        const config = {
+            iceServers: [
+                { urls: "stun:stun.l.google.com:19302" },
+                { urls: "stun:stun1.l.google.com:19302" }
+            ]
+        };
+        
+        // ========== ПЕРЕМЕННЫЕ ==========
+        let peer = null;
+        let conn = null;
+        let myId = null;
+        let myName = "Вы";
+        let friendId = null;
+        let friendName = "Друг";
+        let callActive = false;
+        let callTimer = 0;
+        let callInterval = null;
+        let localStream = null;
+        let remoteStream = null;
+        let peerConnection = null;
+        let dataChannel = null;
+        let messages = [];
+        
+        // ========== ИНИЦИАЛИЗАЦИЯ PEER ==========
+        function initPeer() {
+            // Создаем Peer с ID или генерируем случайный
+            peer = new Peer({
+                config: config,
+                debug: 2
+            });
+            
+            peer.on('open', (id) => {
+                myId = id;
+                updateUI();
+                showNotification(`✅ Подключено! Ваш ID: ${id}`);
+            });
+            
+            peer.on('connection', (connection) => {
+                // Кто-то подключается к нам
+                conn = connection;
+                setupConnection();
+                friendId = connection.peer;
+                friendName = `Друг (${friendId.substring(0, 6)})`;
+                updateUI();
+                showNotification(`🔗 ${friendName} подключился к вам!`);
+            });
+            
+            peer.on('call', (call) => {
+                // Входящий звонок
+                showNotification(`📞 Входящий звонок от ${friendName}`);
+                document.getElementById('callPanel').classList.add('active');
+                document.getElementById('acceptBtn').style.display = 'block';
+                document.getElementById('callTitle').textContent = 'Входящий звонок';
+                document.getElementById('callWith').textContent = friendName;
+                
+                // Принимаем звонок
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        localStream = stream;
+                        call.answer(stream);
+                        call.on('stream', (remoteStream) => {
+                            // Устанавливаем удаленный поток
+                            remoteStream = remoteStream;
+                            startCallTimer();
+                            showNotification('✅ Звонок установлен!');
+                            document.getElementById('acceptBtn').style.display = 'none';
+                        });
+                    })
+                    .catch(err => {
+                        console.error('Ошибка доступа к микрофону:', err);
+                        showNotification('❌ Ошибка доступа к микрофону');
+                    });
+            });
+            
+            peer.on('error', (err) => {
+                console.error('PeerJS ошибка:', err);
+                showNotification(`❌ Ошибка: ${err.type}`);
+            });
+        }
+        
+        // ========== ПОДКЛЮЧЕНИЕ К ДРУГУ ==========
+        function connectToFriend() {
+            const input = document.getElementById('friendIdInput');
+            friendId = input.value.trim();
+            
+            if (!friendId) {
+                showNotification('❌ Введите ID друга');
+                return;
+            }
+            
+            if (friendId === myId) {
+                showNotification('❌ Нельзя подключиться к самому себе');
+                return;
+            }
+            
+            showNotification(`🔗 Подключаюсь к ${friendId}...`);
+            
+            // Создаем соединение
+            conn = peer.connect(friendId, {
+                reliable: true
+            });
+            
+            setupConnection();
+            friendName = `Друг (${friendId.substring(0, 6)})`;
+            updateUI();
+        }
+        
+        function setupConnection() {
+            if (!conn) return;
+            
+            conn.on('open', () => {
+                showNotification(`✅ Подключено к ${friendName}!`);
+                updateUI();
+                
+                // Отправляем приветственное сообщение
+                sendSystemMessage('Вы подключились к чату!');
+            });
+            
+            conn.on('data', (data) => {
+                // Получаем сообщение от друга
+                handleIncomingData(data);
+            });
+            
+            conn.on('close', () => {
+                showNotification(`🔌 ${friendName} отключился`);
+                disconnect();
+            });
+            
+            conn.on('error', (err) => {
+                console.error('Ошибка соединения:', err);
+                showNotification('❌ Ошибка соединения');
+            });
+        }
+        
+        // ========== ОБРАБОТКА СООБЩЕНИЙ ==========
+        function handleIncomingData(data) {
+            try {
+                const message = JSON.parse(data);
+                
+                switch (message.type) {
+                    case 'chat':
+                        addMessage(message.sender, message.text, false);
+                        break;
+                        
+                    case 'system':
+                        addSystemMessage(message.text);
+                        break;
+                        
+                    case 'call':
+                        if (message.action === 'start') {
+                            // Друг начал звонок
+                            showNotification(`📞 ${friendName} звонит вам!`);
+                            document.getElementById('callPanel').classList.add('active');
+                            document.getElementById('acceptBtn').style.display = 'block';
+                            document.getElementById('callTitle').textContent = 'Входящий звонок';
+                            document.getElementById('callWith').textContent = friendName;
+                        }
+                        break;
+                }
+            } catch (err) {
+                console.error('Ошибка обработки данных:', err);
+            }
+        }
+        
+        function sendMessage() {
+            if (!conn || conn.open !== true) {
+                showNotification('❌ Нет подключения к другу');
+                return;
+            }
+            
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            // Отправляем сообщение другу
+            const message = {
+                type: 'chat',
+                sender: myName,
+                text: text,
+                time: new Date().toLocaleTimeString()
+            };
+            
+            conn.send(JSON.stringify(message));
+            
+            // Добавляем в наш чат
+            addMessage(myName, text, true);
+            
+            // Очищаем поле ввода
+            input.value = '';
+            input.focus();
+        }
+        
+        function sendSystemMessage(text) {
+            const message = {
+                type: 'system',
+                text: text,
+                time: new Date().toLocaleTimeString()
+            };
+            
+            if (conn && conn.open === true) {
+                conn.send(JSON.stringify(message));
+            }
+            
+            addSystemMessage(text);
+        }
+        
+        // ========== ЗВОНКИ ==========
+        function startCall() {
+            if (!conn || conn.open !== true) {
+                showNotification('❌ Нет подключения к другу');
+                return;
+            }
+            
+            // Уведомляем друга о звонке
+            const callMessage = {
+                type: 'call',
+                action: 'start'
+            };
+            
+            conn.send(JSON.stringify(callMessage));
+            
+            // Показываем панель звонка
+            document.getElementById('callPanel').classList.add('active');
+            document.getElementById('acceptBtn').style.display = 'none';
+            document.getElementById('callTitle').textContent = 'Исходящий звонок';
+            document.getElementById('callWith').textContent = friendName;
+            
+            showNotification(`📞 Звонок ${friendName}...`);
+        }
+        
+        function acceptCall() {
+            // Принимаем звонок (реальная реализация требует медиапотоков)
+            startCallTimer();
+            showNotification('✅ Вы приняли звонок');
+            document.getElementById('acceptBtn').style.display = 'none';
+        }
+        
+        function startCallTimer() {
+            callTimer = 0;
+            clearInterval(callInterval);
+            
+            callInterval = setInterval(() => {
+                callTimer++;
+                const min = Math.floor(callTimer / 60).toString().padStart(2, '0');
+                const sec = (callTimer % 60).toString().padStart(2, '0');
+                document.getElementById('callTimer').textContent = `${min}:${sec}`;
+            }, 1000);
+        }
+        
+        function endCall() {
+            clearInterval(callInterval);
+            document.getElementById('callPanel').classList.remove('active');
+            document.getElementById('callTimer').textContent = '00:00';
+            showNotification('📞 Звонок завершен');
+        }
+        
+        function toggleMute() {
+            const btn = document.getElementById('muteBtn');
+            if (btn.innerHTML.includes('Выкл')) {
+                btn.innerHTML = '<i class="fas fa-microphone-slash"></i> Вкл микрофон';
+                showNotification('🔇 Микрофон выключен');
+            } else {
+                btn.innerHTML = '<i class="fas fa-microphone"></i> Выкл микрофон';
+                showNotification('🎤 Микрофон включен');
+            }
+        }
+        
+        // ========== ОТОБРАЖЕНИЕ ==========
+        function addMessage(sender, text, isMe) {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const loading = document.getElementById('loadingMessages');
+            
+            if (loading) {
+                loading.style.display = 'none';
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isMe ? 'sent' : 'received'}`;
+            messageDiv.innerHTML = `
+                <div class="message-sender">${sender}</div>
+                <div class="message-content">${text}</div>
+                <div class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Сохраняем в историю
+            messages.push({
+                sender: sender,
+                text: text,
+                time: new Date().toLocaleTimeString(),
+                isMe: isMe
+            });
+        }
+        
+        function addSystemMessage(text) {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const loading = document.getElementById('loadingMessages');
+            
+            if (loading) {
+                loading.style.display = 'none';
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            messageDiv.style.textAlign = 'center';
+            messageDiv.style.maxWidth = '100%';
+            messageDiv.innerHTML = `
+                <div class="message-content" style="background: rgba(255,255,255,0.1); font-style: italic;">
+                    ${text}
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function updateUI() {
+            // Обновляем ID
+            if (myId) {
+                document.getElementById('userId').textContent = `ID: ${myId}`;
+            }
+            
+            // Обновляем статус подключения
+            const status = document.getElementById('connectionStatus');
+            const friendStatus = document.getElementById('friendStatus');
+            const currentFriendStatus = document.getElementById('currentFriendStatus');
+            
+            if (conn && conn.open === true) {
+                status.textContent = '✅ Подключено к другу';
+                status.style.color = '#43b581';
+                friendStatus.textContent = `Друг: ${friendName}`;
+                friendStatus.style.color = '#43b581';
+                currentFriendStatus.textContent = '● В сети';
+                currentFriendStatus.style.color = '#43b581';
+                
+                // Включаем поле ввода
+                document.getElementById('messageInput').disabled = false;
+                document.getElementById('sendBtn').disabled = false;
+                document.getElementById('callBtn').disabled = false;
+                
+                // Обновляем информацию о друге
+                document.getElementById('friendName').textContent = friendName;
+                document.getElementById('friendAvatar').textContent = friendName.charAt(0);
+            } else {
+                status.textContent = 'Ожидание подключения...';
+                status.style.color = '#f72585';
+                friendStatus.textContent = 'Друг не подключен';
+                friendStatus.style.color = '#94a3b8';
+                currentFriendStatus.textContent = '● Не подключен';
+                currentFriendStatus.style.color = '#f72585';
+                
+                // Отключаем поле ввода
+                document.getElementById('messageInput').disabled = true;
+                document.getElementById('sendBtn').disabled = true;
+                document.getElementById('callBtn').disabled = true;
+                
+                document.getElementById('friendName').textContent = 'Выберите друга';
+                document.getElementById('friendAvatar').textContent = 'Д';
+            }
+        }
+        
+        // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+        function copyMyId() {
+            if (!myId) {
+                showNotification('❌ ID еще не загружен');
+                return;
+            }
+            
+            navigator.clipboard.writeText(myId)
+                .then(() => showNotification('✅ ID скопирован! Отправь другу'))
+                .catch(() => {
+                    // Fallback
+                    const input = document.createElement('input');
+                    input.value = myId;
+                    document.body.appendChild(input);
+                    input.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(input);
+                    showNotification('✅ ID скопирован!');
+                });
+        }
+        
+        function disconnect() {
+            if (conn) {
+                conn.close();
+                conn = null;
+            }
+            
+            friendId = null;
+            friendName = "Друг";
+            updateUI();
+            showNotification('🔌 Отключено от друга');
+        }
+        
+        function showNotification(text) {
+            const notification = document.getElementById('notification');
+            notification.querySelector('#notificationText').textContent = text;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // ========== ЗАПУСК ==========
+        document.addEventListener('DOMContentLoaded', () => {
+            initPeer();
+            showNotification('🚀 P2P Мессенджер запускается...');
+            
+            // Добавляем инструкцию
+            setTimeout(() => {
+                addSystemMessage('📋 Инструкция:');
+                addSystemMessage('1. Скопируйте свой ID (слева сверху)');
+                addSystemMessage('2. Отправьте ID другу');
+                addSystemMessage('3. Друг вводит ваш ID и нажимает подключиться');
+                addSystemMessage('4. Теперь можно общаться и звонить!');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
