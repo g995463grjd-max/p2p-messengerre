@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📱 P2P Мессенджер PRO</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #0f172a;
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Приложение */
+        .app {
+            display: flex;
+            height: 100vh;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        /* Левая панель */
+        .sidebar {
+            width: 300px;
+            background: #1e293b;
+            border-right: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-panel {
+            padding: 20px;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .user-details {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .user-id {
+            background: rgba(59, 130, 246, 0.2);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-family: monospace;
+            border: 1px solid #3b82f6;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .copy-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 2px;
+        }
+        
+        /* Меню */
+        .menu {
+            padding: 20px;
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .menu-item.active {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border-left: 3px solid #3b82f6;
+        }
+        
+        .menu-icon {
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Чаты */
+        .chats-section {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .chat-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .chat-item.active {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid #3b82f6;
+        }
+        
+        .chat-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .personal .chat-avatar {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .group .chat-avatar {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+        
+        .chat-info {
+            flex: 1;
+        }
+        
+        .chat-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        .chat-last {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        /* Чат */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0f172a;
+        }
+        
+        .chat-header {
+            padding: 20px;
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .chat-with {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .chat-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: #475569;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .action-btn:hover {
+            background: #64748b;
+        }
+        
+        .action-btn.primary {
+            background: #3b82f6;
+        }
+        
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message.in {
+            background: #1e293b;
+            align-self: flex-start;
+        }
+        
+        .message.out {
+            background: #1e40af;
+            align-self: flex-end;
+        }
+        
+        .message-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 5px;
+        }
+        
+        .input-area {
+            padding: 20px;
+            background: #1e293b;
+            border-top: 1px solid #334155;
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 15px 20px;
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 25px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .message-input:focus {
+            border-color: #3b82f6;
+        }
+        
+        .send-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        .send-btn:hover {
+            background: #2563eb;
+        }
+        
+        /* Настройки */
+        .settings-panel {
+            width: 400px;
+            background: #1e293b;
+            border-left: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .settings-header {
+            padding: 20px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .settings-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .settings-section {
+            margin-bottom: 30px;
+        }
+        
+        .settings-section h3 {
+            color: #3b82f6;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .setting-item label {
+            flex: 1;
+        }
+        
+        .setting-item small {
+            display: block;
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        select, input[type="range"], input[type="text"], input[type="color"] {
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            color: white;
+            padding: 8px 12px;
+            margin-top: 5px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+        }
+        
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .theme-preview {
+            width: 60px;
+            height: 30px;
+            border-radius: 6px;
+            border: 2px solid #475569;
+            cursor: pointer;
+        }
+        
+        /* Звонки */
+        .call-panel {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 20px;
+            border: 2px solid #3b82f6;
+            z-index: 1000;
+            text-align: center;
+            min-width: 300px;
+        }
+        
+        .call-panel.active {
+            display: block;
+        }
+        
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            border: 2px solid #3b82f6;
+        }
+        
+        /* Уведомления */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            display: none;
+            z-index: 3000;
+        }
+        
+        .notification.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Пустой чат */
+        .empty-chat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #94a3b8;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .add-chat-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+        
+        .add-chat-btn:hover {
+            background: #2563eb;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Левая панель -->
+        <div class="sidebar">
+            <div class="user-panel">
+                <div class="user-info" onclick="showSettings()">
+                    <div class="user-avatar" id="userAvatar">Я</div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">Вы</div>
+                        <div class="user-id" id="userId" onclick="copyMyId(event)">
+                            ID: <span id="idText">Загрузка...</span>
+                            <button class="copy-btn">📋</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu">
+                <div class="menu-item active" onclick="switchMenu('chats')">
+                    <span class="menu-icon">💬</span>
+                    <span>Чаты</span>
+                </div>
+                <div class="menu-item" onclick="switchMenu('contacts')">
+                    <span class="menu-icon">👥</span>
+                    <span>Контакты</span>
+                </div>
+                <div class="menu-item" onclick="switchMenu('groups')">
+                    <span class="menu-icon">👨‍👩‍👧‍👦</span>
+                    <span>Группы</span>
+                </div>
+                <div class="menu-item" onclick="showSettings()">
+                    <span class="menu-icon">⚙️</span>
+                    <span>Настройки</span>
+                </div>
+            </div>
+            
+            <div class="chats-section" id="chatsList">
+                <!-- Список чатов -->
+            </div>
+        </div>
+
+        <!-- Центральная область - чат -->
+        <div class="chat-area" id="chatArea">
+            <div class="chat-header">
+                <div class="chat-with">
+                    <div class="chat-avatar personal" id="chatAvatar">Ч</div>
+                    <div>
+                        <h3 id="chatTitle">Выберите чат</h3>
+                        <div id="chatStatus" style="font-size: 14px; color: #94a3b8;">
+                            Начните общение
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-actions" id="chatActions" style="display: none;">
+                    <button class="action-btn" onclick="toggleSettings()">⚙️</button>
+                    <button class="action-btn primary" onclick="startCall()">📞</button>
+                    <button class="action-btn" onclick="clearChat()">🗑️</button>
+                </div>
+            </div>
+            
+            <div class="messages" id="messages">
+                <div class="empty-chat">
+                    <h3>👋 Добро пожаловать в P2P Мессенджер!</h3>
+                    <p>Ваш ID: <strong id="welcomeId">...</strong></p>
+                    <p style="margin-top: 20px;">Отправьте этот ID другу для подключения</p>
+                </div>
+            </div>
+            
+            <div class="input-area" id="inputArea" style="display: none;">
+                <div class="input-container">
+                    <input type="text" class="message-input" id="messageInput" 
+                           placeholder="Введите сообщение..." 
+                           onkeypress="if(event.key === 'Enter') sendMessage()">
+                    <button class="send-btn" onclick="sendMessage()">➤</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая панель - настройки -->
+        <div class="settings-panel" id="settingsPanel" style="display: none;">
+            <div class="settings-header">
+                <h2>⚙️ Настройки</h2>
+                <button class="action-btn" onclick="toggleSettings()">✕</button>
+            </div>
+            
+            <div class="settings-content">
+                <!-- Профиль -->
+                <div class="settings-section">
+                    <h3>👤 Профиль</h3>
+                    <div class="setting-item">
+                        <div>
+                            <label>Ваше имя</label>
+                            <input type="text" id="profileName" value="Вы" style="width: 100%; margin-top: 8px;">
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div>
+                            <label>Статус</label>
+                            <input type="text" id="profileStatus" value="В сети" style="width: 100%; margin-top: 8px;">
+                        </div>
+                    </div>
+                    <button class="action-btn primary" onclick="saveProfile()" style="width: 100%; margin-top: 10px;">
+                        Сохранить
+                    </button>
+                </div>
+                
+                <!-- Внешний вид -->
+                <div class="settings-section">
+                    <h3>🎨 Внешний вид</h3>
+                    <div class="setting-item">
+                        <label>
+                            Тема
+                            <small>Выберите цветовую схему</small>
+                        </label>
+                        <select id="themeSelect">
+                            <option value="dark">Тёмная</option>
+                            <option value="blue">Синяя</option>
+                            <option value="purple">Фиолетовая</option>
+                            <option value="green">Зелёная</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            Размер шрифта
+                            <small>Настройте удобный размер текста</small>
+                        </label>
+                        <input type="range" id="fontSize" min="12" max="20" value="16">
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            Плотность сообщений
+                            <small>Расстояние между сообщениями</small>
+                        </label>
+                        <select id="messageSpacing">
+                            <option value="compact">Компактно</option>
+                            <option value="normal" selected>Нормально</option>
+                            <option value="comfortable">Комфортно</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Уведомления -->
+                <div class="settings-section">
+                    <h3>🔔 Уведомления</h3>
+                    <div class="setting-item">
+                        <label>
+                            Звук сообщений
+                            <small>Включить звуковые уведомления</small>
+                        </label>
+                        <label class="switch">
+                            <input type="checkbox" id="soundToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            Вибросигнал
+                            <small>Вибрация при новых сообщениях</small>
+                        </label>
+                        <label class="switch">
+                            <input type="checkbox" id="vibrateToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            Показывать предпросмотр
+                            <small>Показывать текст сообщения в уведомлении</small>
+                        </label>
+                        <label class="switch">
+                            <input type="checkbox" id="previewToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Конфиденциальность -->
+                <div class="settings-section">
+                    <h3>🔒 Конфиденциальность</h3>
+                    <div class="setting-item">
+                        <label>
+                            Статус онлайн
+                            <small>Показывать другим, что вы в сети</small>
+                        </label>
+                        <label class="switch">
+                            <input type="checkbox" id="onlineStatusToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            Последний раз в сети
+                            <small>Показывать время последней активности</small>
+                        </label>
+                        <label class="switch">
+                            <input type="checkbox" id="lastSeenToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            Прочитанные сообщения
+                            <small>Показывать отметки о прочтении</small>
+                        </label>
+                        <label class="switch">
+                            <input type="checkbox" id="readReceiptsToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Голосовые звонки -->
+                <div class="settings-section">
+                    <h3>📞 Звонки</h3>
+                    <div class="setting-item">
+                        <label>
+                            Автопринятие звонков
+                            <small>Автоматически принимать входящие звонки</small>
+                        </label>
+                        <label class="switch">
+                            <input type="checkbox" id="autoAnswerToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            Подавление шума
+                            <small>Улучшение качества звука</small>
+                        </label>
+                        <label class="switch">
+                            <input type="checkbox" id="noiseSuppressionToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            Эхоподавление
+                            <small>Устранение эха во время звонка</small>
+                        </label>
+                        <label class="switch">
+                            <input type="checkbox" id="echoCancellationToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Данные и хранилище -->
+                <div class="settings-section">
+                    <h3>💾 Данные</h3>
+                    <div class="setting-item">
+                        <label>
+                            Автоудаление сообщений
+                            <small>Удалять старые сообщения автоматически</small>
+                            <select id="autoDelete" style="width: 100%; margin-top: 8px;">
+                                <option value="never">Никогда</option>
+                                <option value="week">Через 1 неделю</option>
+                                <option value="month">Через 1 месяц</option>
+                                <option value="3months">Через 3 месяца</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            Сохранять медиа
+                            <small>Автоматически сохранять фото и видео</small>
+                        </label>
+                        <label class="switch">
+                            <input type="checkbox" id="saveMediaToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            Использование данных
+                            <small>Ограничение для мобильных сетей</small>
+                            <select id="dataUsage" style="width: 100%; margin-top: 8px;">
+                                <option value="high">Высокое качество</option>
+                                <option value="normal" selected>Нормальное</option>
+                                <option value="low">Экономный режим</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Дополнительно -->
+                <div class="settings-section">
+                    <h3>⚡ Дополнительно</h3>
+                    <div class="setting-item">
+                        <button class="action-btn" onclick="exportData()" style="width: 100%;">
+                            📤 Экспорт данных
+                        </button>
+                    </div>
+                    <div class="setting-item">
+                        <button class="action-btn" onclick="clearAllData()" style="width: 100%; background: #ef4444;">
+                            🗑️ Очистить всё
+                        </button>
+                    </div>
+                    <div class="setting-item">
+                        <button class="action-btn" onclick="showAbout()" style="width: 100%; background: #8b5cf6;">
+                            ℹ️ О программе
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопка добавления -->
+    <button class="add-chat-btn" onclick="showAddModal()">+</button>
+
+    <!-- Модальные окна -->
+    <div class="modal" id="addModal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 20px;">➕ Добавить</h3>
+            <button class="action-btn primary" onclick="showAddContactModal()" style="width: 100%; margin-bottom: 10px; padding: 15px;">
+                👤 Новый контакт
+            </button>
+            <button class="action-btn primary" onclick="showCreateGroupModal()" style="width: 100%; margin-bottom: 10px; padding: 15px;">
+                👨‍👩‍👧‍👦 Новая группа
+            </button>
+            <button class="action-btn" onclick="hideModal()" style="width: 100%; padding: 15px;">
+                Отмена
+            </button>
+        </div>
+    </div>
+    
+    <div class="modal" id="addContactModal">
+        <div class="modal-content">
+            <h3>👤 Добавить контакт</h3>
+            <input type="text" class="message-input" id="contactId" placeholder="ID друга" style="width: 100%; margin: 15px 0;">
+            <input type="text" class="message-input" id="contactName" placeholder="Имя (необязательно)" style="width: 100%; margin-bottom: 20px;">
+            <div style="display: flex; gap: 10px;">
+                <button class="action-btn" onclick="hideModal()" style="flex: 1;">Отмена</button>
+                <button class="action-btn primary" onclick="addContact()" style="flex: 1;">Добавить</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="createGroupModal">
+        <div class="modal-content">
+            <h3>👨‍👩‍👧‍👦 Создать группу</h3>
+            <input type="text" class="message-input" id="groupName" placeholder="Название группы" style="width: 100%; margin: 15px 0;">
+            <textarea class="message-input" id="groupMembers" placeholder="ID участников (через запятую)" style="width: 100%; height: 100px; margin-bottom: 20px;"></textarea>
+            <div style="display: flex; gap: 10px;">
+                <button class="action-btn" onclick="hideModal()" style="flex: 1;">Отмена</button>
+                <button class="action-btn primary" onclick="createGroup()" style="flex: 1;">Создать</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="aboutModal">
+        <div class="modal-content">
+            <h3>ℹ️ О программе</h3>
+            <div style="margin: 20px 0;">
+                <p><strong>P2P Мессенджер PRO</strong></p>
+                <p>Версия: 2.0.0</p>
+                <p>Разработчик: P2P Team</p>
+                <p>Лицензия: MIT</p>
+                <p style="margin-top: 15px;">Бесплатный мессенджер с P2P технологией</p>
+                <p>Все сообщения шифруются end-to-end</p>
+            </div>
+            <button class="action-btn" onclick="hideModal()" style="width: 100%;">Закрыть</button>
+        </div>
+    </div>
+
+    <!-- Звонок -->
+    <div class="call-panel" id="callPanel">
+        <h3 style="margin-bottom: 10px;">📞 Звонок</h3>
+        <div id="callTo" style="margin-bottom: 20px;">Другу</div>
+        <div id="callTimer" style="font-size: 32px; font-weight: bold; margin: 20px 0;">00:00</div>
+        <div style="display: flex; gap: 10px;">
+            <button class="action-btn primary" onclick="acceptCall()" style="flex: 1;">Принять</button>
+            <button class="action-btn" onclick="toggleMute()" style="flex: 1;">🎤</button>
+            <button class="action-btn" onclick="endCall()" style="flex: 1; background: #ef4444;">Сбросить</button>
+        </div>
+    </div>
+
+    <!-- Уведомление -->
+    <div class="notification" id="notification">
+        <span id="notificationText">Уведомление</span>
+    </div>
+
+    <script>
+        // ========== ДАННЫЕ ==========
+        let myId = null;
+        let myName = "Вы";
+        let contacts = [];
+        let groups = [];
+        let chats = [];
+        let currentChat = null;
+        let messages = {};
+        
+        // Настройки по умолчанию
+        let settings = {
+            theme: 'dark',
+            fontSize: 16,
+            sound: true,
+            vibrate: true,
+            onlineStatus: true,
+            readReceipts: true,
+            autoAnswer: false,
+            noiseSuppression: true,
+            echoCancellation: true,
+            autoDelete: 'never',
+            saveMedia: false,
+            dataUsage: 'normal'
+        };
+        
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        function init() {
+            // Генерируем ID сразу (без PeerJS для простоты)
+            generateMyId();
+            
+            // Загружаем данные
+            loadData();
+            
+            // Показываем ID
+            updateMyIdDisplay();
+            
+            // Добавляем тестовые данные
+            setTimeout(() => {
+                addTestData();
+                showNotification('✅ P2P Мессенджер загружен!');
+            }, 500);
+        }
+        
+        function generateMyId() {
+            // Генерируем случайный ID
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let id = 'USER-';
+            for (let i = 0; i < 8; i++) {
+                id += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            myId = id;
+        }
+        
+        function loadData() {
+            // Загружаем из localStorage
+            const saved = localStorage.getItem('p2p-messenger-data');
+            if (saved) {
+                const data = JSON.parse(saved);
+                contacts = data.contacts || [];
+                groups = data.groups || [];
+                messages = data.messages || {};
+                settings = data.settings || settings;
+                myName = data.myName || myName;
+            }
+            
+            // Применяем настройки
+            applySettings();
+        }
+        
+        function saveData() {
+            const data = {
+                contacts,
+                groups,
+                messages,
+                settings,
+                myName
+            };
+            localStorage.setItem('p2p-messenger-data', JSON.stringify(data));
+        }
+        
+        function applySettings() {
+            // Применяем тему
+            document.documentElement.setAttribute('data-theme', settings.theme);
+            
+            // Применяем размер шрифта
+            document.documentElement.style.fontSize = settings.fontSize + 'px';
+            
+            // Обновляем UI настроек
+            updateSettingsUI();
+        }
+        
+        function updateSettingsUI() {
+            document.getElementById('themeSelect').value = settings.theme;
+            document.getElementById('fontSize').value = settings.fontSize;
+            document.getElementById('soundToggle').checked = settings.sound;
+            document.getElementById('vibrateToggle').checked = settings.vibrate;
+            document.getElementById('onlineStatusToggle').checked = settings.onlineStatus;
+            document.getElementById('readReceiptsToggle').checked = settings.readReceipts;
+            document.getElementById('autoAnswerToggle').checked = settings.autoAnswer;
+            document.getElementById('noiseSuppressionToggle').checked = settings.noiseSuppression;
+            document.getElementById('echoCancellationToggle').checked = settings.echoCancellation;
+            document.getElementById('autoDelete').value = settings.autoDelete;
+            document.getElementById('saveMediaToggle').checked = settings.saveMedia;
+            document.getElementById('dataUsage').value = settings.dataUsage;
+            document.getElementById('profileName').value = myName;
+        }
+        
+        // ========== ТЕСТОВЫЕ ДАННЫЕ ==========
+        function addTestData() {
+            if (contacts.length === 0) {
+                contacts.push({
+                    id: 'TEST123',
+                    name: 'Друг 1',
+                    avatar: 'Д',
+                    online: true
+                });
+                
+                contacts.push({
+                    id: 'TEST456',
+                    name: 'Друг 2',
+                    avatar: 'П',
+                    online: false
+                });
+            }
+            
+            if (groups.length === 0) {
+                groups.push({
+                    id: 'GRP001',
+                    name: 'Группа друзей',
+                    avatar: 'Г',
+                    members: ['Вы', 'Друг 1', 'Друг 2'],
+                    online: 3
+                });
+            }
+            
+            // Тестовые сообщения
+            if (!messages['TEST123']) {
+                messages['TEST123'] = [
+                    { text: 'Привет! Как дела?', sender: 'Друг 1', time: '10:30', isMe: false },
+                    { text: 'Привет! Всё отлично!', sender: myName, time: '10:31', isMe: true },
+                    { text: 'Хочешь позвонить?', sender: 'Друг 1', time: '10:32', isMe: false }
+                ];
+            }
+            
+            if (!messages['GRP001']) {
+                messages['GRP001'] = [
+                    { text: 'Всем привет!', sender: 'Друг 1', time: '10:00', isMe: false },
+                    { text: 'Привет всем!', sender: 'Друг 2', time: '10:01', isMe: false },
+                    { text: 'Рад всех видеть!', sender: myName, time: '10:02', isMe: true }
+                ];
+            }
+            
+            updateChatsList();
+            saveData();
+        }
+        
+        // ========== ОТОБРАЖЕНИЕ ==========
+        function updateMyIdDisplay() {
+            document.getElementById('idText').textContent = myId;
+            document.getElementById('welcomeId').textContent = myId;
+        }
+        
+        function updateChatsList() {
+            const container = document.getElementById('chatsList');
+            container.innerHTML = '';
+            
+            // Собираем все чаты
+            const allChats = [];
+            
+            // Личные чаты
+            contacts.forEach(contact => {
+                const chatMessages = messages[contact.id] || [];
+                const lastMsg = chatMessages[chatMessages.length - 1];
+                
+                allChats.push({
+                    type: 'contact',
+                    id: contact.id,
+                    name: contact.name,
+                    avatar: contact.avatar,
+                    online: contact.online,
+                    lastMessage: lastMsg ? lastMsg.text : 'Нет сообщений',
+                    lastTime: lastMsg ? lastMsg.time : ''
+                });
+            });
+            
+            // Групповые чаты
+            groups.forEach(group => {
+                const chatMessages = messages[group.id] || [];
+                const lastMsg = chatMessages[chatMessages.length - 1];
+                
+                allChats.push({
+                    type: 'group',
+                    id: group.id,
+                    name: group.name,
+                    avatar: group.avatar,
+                    online: group.online,
+                    lastMessage: lastMsg ? `${lastMsg.sender}: ${lastMsg.text}` : 'Нет сообщений',
+                    lastTime: lastMsg ? lastMsg.time : ''
+                });
+            });
+            
+            // Сортируем по времени
+            allChats.sort((a, b) => {
+                if (!a.lastTime && !b.lastTime) return 0;
+                if (!a.lastTime) return 1;
+                if (!b.lastTime) return -1;
+                return b.lastTime.localeCompare(a.lastTime);
+            });
+            
+            // Отображаем
+            allChats.forEach(chat => {
+                const div = document.createElement('div');
+                div.className = `chat-item ${chat.type} ${currentChat && currentChat.id === chat.id ? 'active' : ''}`;
+                div.onclick = () => selectChat(chat);
+                div.innerHTML = `
+                    <div class="chat-avatar">${chat.avatar}</div>
+                    <div class="chat-info">
+                        <div class="chat-name">${chat.name}</div>
+                        <div class="chat-last">${chat.lastMessage.substring(0, 30)}${chat.lastMessage.length > 30 ? '...' : ''}</div>
+                    </div>
+                    ${chat.online ? '<div style="color: #10b981; font-size: 12px;">●</div>' : ''}
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function selectChat(chat) {
+            currentChat = chat;
+            
+            // Обновляем заголовок
+            document.getElementById('chatTitle').textContent = chat.name;
+            document.getElementById('chatAvatar').textContent = chat.avatar;
+            document.getElementById('chatStatus').textContent = 
+                chat.type === 'contact' ? 
+                (chat.online ? '● В сети' : '● Не в сети') :
+                `👥 ${chat.type === 'group' ? 'Групповой чат' : ''}`;
+            
+            // Показываем действия
+            document.getElementById('chatActions').style.display = 'flex';
+            document.getElementById('inputArea').style.display = 'block';
+            
+            // Обновляем список чатов
+            updateChatsList();
+            
+            // Показываем сообщения
+            showMessages();
+        }
+        
+        function showMessages() {
+            if (!currentChat) return;
+            
+            const container = document.getElementById('messages');
+            const chatMessages = messages[currentChat.id] || [];
+            
+            container.innerHTML = '';
+            
+            if (chatMessages.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-chat">
+                        <h3>Начните общение!</h3>
+                        <p>Отправьте первое сообщение</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            chatMessages.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = `message ${msg.isMe ? 'out' : 'in'}`;
+                div.innerHTML = `
+                    <div>${msg.text}</div>
+                    <div class="message-info">
+                        <span>${msg.sender}</span>
+                        <span>${msg.time}</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        // ========== СООБЩЕНИЯ ==========
+        function sendMessage() {
+            if (!currentChat) {
+                showNotification('❌ Выберите чат');
+                return;
+            }
+            
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (!text) return;
+            
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Сохраняем сообщение
+            if (!messages[currentChat.id]) {
+                messages[currentChat.id] = [];
+            }
+            
+            messages[currentChat.id].push({
+                text: text,
+                sender: myName,
+                time: time,
+                isMe: true
+            });
+            
+            // Очищаем поле
+            input.value = '';
+            
+            // Обновляем UI
+            showMessages();
+            updateChatsList();
+            saveData();
+            
+            // Имитация ответа (в реальном приложении здесь был бы P2P)
+            if (currentChat.type === 'contact' && currentChat.online) {
+                setTimeout(() => {
+                    const replies = [
+                        "Привет!",
+                        "Хорошо!)",
+                        "Как сам?",
+                        "Слушаю тебя",
+                        "Отлично!"
+                    ];
+                    const reply = replies[Math.floor(Math.random() * replies.length)];
+                    const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    
+                    messages[currentChat.id].push({
+                        text: reply,
+                        sender: currentChat.name,
+                        time: replyTime,
+                        isMe: false
+                    });
+                    
+                    showMessages();
+                    updateChatsList();
+                    saveData();
+                    showNotification(`💬 ${currentChat.name}: ${reply}`);
+                }, 1000);
+            }
+        }
+        
+        // ========== НАСТРОЙКИ ==========
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+        }
+        
+        function saveProfile() {
+            const newName = document.getElementById('profileName').value.trim();
+            if (newName && newName.length > 0) {
+                myName = newName;
+                document.getElementById('userName').textContent = myName;
+                saveData();
+                showNotification('✅ Профиль сохранён');
+            }
+        }
+        
+        function saveAllSettings() {
+            // Сохраняем все настройки
+            settings.theme = document.getElementById('themeSelect').value;
+            settings.fontSize = parseInt(document.getElementById('fontSize').value);
+            settings.sound = document.getElementById('soundToggle').checked;
+            settings.vibrate = document.getElementById('vibrateToggle').checked;
+            settings.onlineStatus = document.getElementById('onlineStatusToggle').checked;
+            settings.readReceipts = document.getElementById('readReceiptsToggle').checked;
+            settings.autoAnswer = document.getElementById('autoAnswerToggle').checked;
+            settings.noiseSuppression = document.getElementById('noiseSuppressionToggle').checked;
+            settings.echoCancellation = document.getElementById('echoCancellationToggle').checked;
+            settings.autoDelete = document.getElementById('autoDelete').value;
+            settings.saveMedia = document.getElementById('saveMediaToggle').checked;
+            settings.dataUsage = document.getElementById('dataUsage').value;
+            
+            // Применяем
+            applySettings();
+            saveData();
+            showNotification('✅ Настройки сохранены');
+        }
+        
+        // Слушаем изменения настроек
+        document.querySelectorAll('#settingsPanel input, #settingsPanel select').forEach(el => {
+            el.addEventListener('change', saveAllSettings);
+        });
+        
+        // ========== КОНТАКТЫ И ГРУППЫ ==========
+        function showAddModal() {
+            document.getElementById('addModal').classList.add('active');
+        }
+        
+        function showAddContactModal() {
+            document.getElementById('addModal').classList.remove('active');
+            document.getElementById('addContactModal').classList.add('active');
+        }
+        
+        function showCreateGroupModal() {
+            document.getElementById('addModal').classList.remove('active');
+            document.getElementById('createGroupModal').classList.add('active');
+        }
+        
+        function addContact() {
+            const id = document.getElementById('contactId').value.trim();
+            const name = document.getElementById('contactName').value.trim() || `Друг (${id.substring(0, 6)})`;
+            
+            if (!id) {
+                showNotification('❌ Введите ID друга');
+                return;
+            }
+            
+            if (id === myId) {
+                showNotification('❌ Нельзя добавить самого себя');
+                return;
+            }
+            
+            if (contacts.find(c => c.id === id)) {
+                showNotification('❌ Этот контакт уже добавлен');
+                return;
+            }
+            
+            contacts.push({
+                id: id,
+                name: name,
+                avatar: name.charAt(0),
+                online: false
+            });
+            
+            hideModal();
+            updateChatsList();
+            saveData();
+            showNotification(`👤 Контакт "${name}" добавлен`);
+        }
+        
+        function createGroup() {
+            const name = document.getElementById('groupName').value.trim();
+            const membersInput = document.getElementById('groupMembers').value.trim();
+            
+            if (!name) {
+                showNotification('❌ Введите название группы');
+                return;
+            }
+            
+            const groupId = 'GRP-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+            const members = ['Вы'];
+            
+            if (membersInput) {
+                membersInput.split(',').forEach(id => {
+                    const trimmed = id.trim();
+                    if (trimmed && trimmed !== myId) {
+                        members.push(`Участник (${trimmed.substring(0, 6)})`);
+                    }
+                });
+            }
+            
+            groups.push({
+                id: groupId,
+                name: name,
+                avatar: name.charAt(0),
+                members: members,
+                online: members.length
+            });
+            
+            hideModal();
+            updateChatsList();
+            saveData();
+            showNotification(`👨‍👩‍👧‍👦 Группа "${name}" создана`);
+        }
+        
+        // ========== ЗВОНКИ ==========
+        function startCall() {
+            if (!currentChat) {
+                showNotification('❌ Выберите чат');
+                return;
+            }
+            
+            document.getElementById('callPanel').classList.add('active');
+            document.getElementById('callTo').textContent = currentChat.name;
+            
+            // Запускаем таймер
+            let seconds = 0;
+            const timer = setInterval(() => {
+                seconds++;
+                const min = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const sec = (seconds % 60).toString().padStart(2, '0');
+                document.getElementById('callTimer').textContent = `${min}:${sec}`;
+            }, 1000);
+            
+            // Сохраняем ID таймера для остановки
+            document.getElementById('callPanel').dataset.timer = timer;
+            
+            showNotification(`📞 Звонок ${currentChat.name}...`);
+        }
+        
+        function acceptCall() {
+            showNotification('✅ Звонок принят');
+        }
+        
+        function endCall() {
+            const timer = document.getElementById('callPanel').dataset.timer;
+            if (timer) clearInterval(parseInt(timer));
+            
+            document.getElementById('callPanel').classList.remove('active');
+            document.getElementById('callTimer').textContent = '00:00';
+            showNotification('📞 Звонок завершён');
+        }
+        
+        function toggleMute() {
+            showNotification('🎤 Микрофон переключен');
+        }
+        
+        // ========== ВСПОМОГАТЕЛЬНЫЕ ==========
+        function copyMyId(e) {
+            if (e) e.stopPropagation();
+            
+            navigator.clipboard.writeText(myId)
+                .then(() => showNotification('✅ ID скопирован! Отправь другу'))
+                .catch(() => {
+                    const input = document.createElement('input');
+                    input.value = myId;
+                    document.body.appendChild(input);
+                    input.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(input);
+                    showNotification('✅ ID скопирован!');
+                });
+        }
+        
+        function hideModal() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.remove('active');
+            });
+        }
+        
+        function showNotification(text) {
+            const notification = document.getElementById('notification');
+            notification.querySelector('#notificationText').textContent = text;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        function switchMenu(menu) {
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.menu-item').classList.add('active');
+            
+            // Здесь можно добавить логику переключения между чатами/контактами/группами
+        }
+        
+        function clearChat() {
+            if (!currentChat) return;
+            
+            if (confirm('Очистить историю чата?')) {
+                messages[currentChat.id] = [];
+                showMessages();
+                updateChatsList();
+                saveData();
+                showNotification('🗑️ История очищена');
+            }
+        }
+        
+        function exportData() {
+            const data = {
+                contacts,
+                groups,
+                messages,
+                settings,
+                myName,
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `p2p-messenger-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('📤 Данные экспортированы');
+        }
+        
+        function clearAllData() {
+            if (confirm('УДАЛИТЬ ВСЕ ДАННЫЕ? Это действие нельзя отменить!')) {
+                localStorage.removeItem('p2p-messenger-data');
+                contacts = [];
+                groups = [];
+                messages = {};
+                currentChat = null;
+                
+                updateChatsList();
+                document.getElementById('messages').innerHTML = `
+                    <div class="empty-chat">
+                        <h3>👋 Добро пожаловать в P2P Мессенджер!</h3>
+                        <p>Ваш ID: <strong>${myId}</strong></p>
+                        <p style="margin-top: 20px;">Отправьте этот ID другу для подключения</p>
+                    </div>
+                `;
+                
+                document.getElementById('chatActions').style.display = 'none';
+                document.getElementById('inputArea').style.display = 'none';
+                
+                showNotification('🗑️ Все данные очищены');
+            }
+        }
+        
+        function showAbout() {
+            document.getElementById('aboutModal').classList.add('active');
+        }
+        
+        // ========== ЗАПУСК ==========
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
