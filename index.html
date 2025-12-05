@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>P2P Чат - ПРОСТОЙ</title>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <style>
+        body { background: #1a1a2e; color: white; font-family: Arial; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        #myId { background: #4cc9f0; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        #messages { height: 400px; overflow-y: auto; border: 2px solid #4cc9f0; padding: 10px; margin: 10px 0; }
+        .msg { margin: 5px 0; padding: 10px; border-radius: 10px; }
+        .my { background: #4cc9f0; text-align: right; }
+        .friend { background: #43b581; }
+        input, button { padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📱 P2P Чат (ПРОСТОЙ)</h2>
+        <div>Твой ID: <span id="myId">загрузка...</span></div>
+        <input id="friendId" placeholder="ID друга">
+        <button onclick="connect()">Подключиться</button>
+        <div id="messages"></div>
+        <input id="message" placeholder="Сообщение" style="width: 70%">
+        <button onclick="send()">Отправить</button>
+    </div>
+
+    <script>
+        let peer = new Peer();
+        let conn = null;
+        
+        peer.on('open', (id) => {
+            document.getElementById('myId').textContent = id;
+        });
+        
+        peer.on('connection', (connection) => {
+            conn = connection;
+            conn.on('data', (data) => {
+                addMessage(data, false);
+            });
+        });
+        
+        function connect() {
+            const friendId = document.getElementById('friendId').value;
+            conn = peer.connect(friendId);
+            conn.on('open', () => {
+                addMessage('✅ Подключено!', true);
+            });
+            conn.on('data', (data) => {
+                addMessage(data, false);
+            });
+        }
+        
+        function send() {
+            const msg = document.getElementById('message').value;
+            if (conn && conn.open) {
+                conn.send(msg);
+                addMessage(msg, true);
+                document.getElementById('message').value = '';
+            }
+        }
+        
+        function addMessage(text, isMe) {
+            const div = document.createElement('div');
+            div.className = `msg ${isMe ? 'my' : 'friend'}`;
+            div.textContent = text;
+            document.getElementById('messages').appendChild(div);
+        }
+    </script>
+</body>
+</html>
